@@ -1,0 +1,9 @@
+[workspace]
+
+[package]
+name = "%%PACKAGE_NAME%%"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+ascii = "1"

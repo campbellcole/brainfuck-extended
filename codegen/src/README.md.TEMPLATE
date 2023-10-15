@@ -1,0 +1,11 @@
+# %%PACKAGE_NAME%%
+
+Generated using `brainfuck-extended::codegen` at %%TIMESTAMP%%.
+
+## Original Source
+
+See [%%SOURCE_FILENAME%%](./%%SOURCE_FILENAME%%)
+
+```
+%%SOURCE_CODE%%
+```

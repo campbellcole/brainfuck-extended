@@ -1,0 +1,8 @@
+# cached direnv files
+/.direnv
+# cargo files
+/target
+# codegen generated crates
+/generated
+# vscode launch configurations
+/.vscode/launch.json
