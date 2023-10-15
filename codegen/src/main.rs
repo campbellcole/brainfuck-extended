@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use ascii::AsciiString;
 use clap::Parser;
 use color_eyre::eyre::{Context, Result};
-use generator::{BrainfuckToRust, CellSize, OverflowBehavior, PointerSafety};
+use generator::{BrainfuckToRust, CellSize, EofBehavior, OverflowBehavior, PointerSafety};
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
 
@@ -30,13 +30,18 @@ pub type File = ast::File<ast::Repeated>;
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
+    /// The Brainfuck source code file
     pub input: PathBuf,
+    /// The directory to store the generated crate in
     pub output: PathBuf,
     #[clap(short, long)]
+    /// Pass the generated source code through `rustfmt`
     pub format: bool,
     #[clap(short, long)]
+    /// Dump the parsed AST to this JSON file
     pub dump_ast: Option<PathBuf>,
     #[clap(long)]
+    /// Force the use of the given ASCII string as the input, rather than reading stdin
     pub fixed_input: Option<AsciiString>,
 }
 
@@ -73,6 +78,7 @@ fn main() -> Result<()> {
         .pointer_safety(PointerSafety::None)
         .overflow_behavior(OverflowBehavior::None)
         .fixed_input(cli.fixed_input.clone())
+        .eof_behavior(EofBehavior::NoChange)
         .build()
         .generate(file)
         .wrap_err("failed to generate Rust from Brainfuck")?;

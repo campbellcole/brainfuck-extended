@@ -2,6 +2,48 @@
 
 A Brainfuck interpreter, debugger, and compiler written in Rust.
 
+# Code Generator
+
+The code generator crate (`codegen`) transpiles Brainfuck code into a Rust crate. The only optimization it
+performs does nothing to increase performance, only improving source code size.
+
+## Usage
+
+`cargo run --release -p codegen -- <brainfuck_source> <output_crate_dir> [-f] [--dump-ast <dump_path.json>] [--fixed-input <fixed_input>]`
+
+- `<brainfuck_source>`: Path to the Brainfuck source code file
+- `<output_crate_dir>`: The directory in which to store the generated crate (see [Generated Code Structure](#generated-code-structure))
+- `[-f] | [--format]`: Enable the use of `rustfmt` for formatting the generated source code
+- `[--dump-ast <dump_path.json>]`: Dump the parsed syntax tree to this JSON file
+- `[--fixed-input <fixed_input>]`: Replace the stdin reading code with a fixed string. All `,` instructions will
+  be forced to use this string instead of stdin
+
+### Fine-Tuning
+
+You can tweak the behavior of the "engine" by modifying things such as cell size, memory size, overflow behavior, etc.
+You can tweak these by modifying the constants in the [`codegen/src/main.rs`](./codegen/src/main.rs) file, near the
+bottom of `fn main()`. The options are documented in [`codegen/src/generator.rs`](./codegen/src/generator.rs).
+
+**Note:** There is currently a bug with cell sizes other than `U8` because `quote` emits primitive number types
+as e.g. `1u8` for `u8`, so the type of the number inside the generator is important. This can be fixed using generics.
+
+## Generated Code Structure
+
+The `codegen` crate generates an entire crate that is self-sufficient and can be run directly. It is highly recommended
+that you run the generated code in `--release` mode because development builds handle overflow differently (and of
+course performance will be dramatically improved). It is very likely that a transpiled program will panic when run
+in a development build. This could be fixed by wrapping the program's memory in [`Wrapping<T>`](https://doc.rust-lang.org/std/num/struct.Wrapping.html).
+
+### Running generated code
+
+For programs that do not read any user input:
+`cargo run --release --manifest-path <output_crate_dir/Cargo.toml`
+
+For programs that do read user input:
+`echo "<input>" | cargo run --release --manifest-path <output_crate_dir/Cargo.toml`
+
+Using `echo` is not required. Any method of piping input into the program will work.
+
 # Interpreter/Debugger
 
 The interpreter and debugger are within the same crate (`brainfuck-extended`). To enable the debugger,
@@ -34,36 +76,3 @@ greater values (1/N) will cause N instructions to be skipped before drawing. For
 There is a bug somewhere in the interpreter that causes complex programs to execute incorrectly. I suspect it
 exists within the loop handling code as that's been the biggest challenge. This bug does not exist in the code
 generator.
-
-# Code Generator
-
-The code generator crate (`codegen`) transpiles Brainfuck code into a Rust crate. The only optimization it
-performs does nothing to increase performance, only improving source code size.
-
-## Usage
-
-`cargo run --release -p codegen -- <brainfuck_source> <output_crate_dir> [-f] [--dump-ast <dump_path.json>] [--fixed-input <fixed_input>]`
-
-- `<brainfuck_source>`: Path to the Brainfuck source code file
-- `<output_crate_dir>`: The directory in which to store the generated crate (see [Generated Code Structure](#generated-code-structure))
-- `[-f] | [--format]`: Enable the use of `rustfmt` for formatting the generated source code
-- `[--dump-ast <dump_path.json>]`: Dump the parsed syntax tree to this JSON file
-- `[--fixed-input <fixed_input>]`: Replace the stdin reading code with a fixed string. All `,` instructions will
-  be forced to use this string instead of stdin
-
-## Generated Code Structure
-
-The `codegen` crate generates an entire crate that is self-sufficient and can be run directly. It is highly recommended
-that you run the generated code in `--release` mode because development builds handle overflow differently (and of
-course performance will be dramatically improved). It is very likely that a transpiled program will panic when run
-in a development build. This could be fixed by wrapping the program's memory in `Wrapping<T>`.
-
-## Running generated code
-
-For programs that do not read any user input:
-`cargo run --release --manifest-path <output_crate_dir/Cargo.toml`
-
-For programs that do read user input:
-`echo "<input>" | cargo run --release --manifest-path <output_crate_dir/Cargo.toml`
-
-Using `echo` is not required. Any method of piping input into the program will work.

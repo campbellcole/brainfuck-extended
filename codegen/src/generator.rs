@@ -8,38 +8,54 @@ use typed_builder::TypedBuilder;
 use crate::ast::{File, Segment, Token, TokenExt, Tokens};
 
 #[derive(Default, Debug, Clone, Copy)]
+/// The size of a cell on the tape
 pub enum CellSize {
     #[default]
+    /// `u8`
     U8,
+    /// `u16`
     U16,
+    /// `u32`
     U32,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// How to handle pointer overflow/underflow
 pub enum PointerSafety {
+    /// Wrap around to the maximum pointer size or zero
     Wrap,
+    /// Do nothing when at a memory boundary
     Clamp,
     #[default]
+    /// Do not check, behavior depends on build type + platform
     None,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// How to handle cell overflow/underflow
 pub enum OverflowBehavior {
+    /// Wrap the value around to `u8::MIN` or `u8::MAX`
     Wrap,
+    /// Panic if the value overflows/underflows
     Abort,
     #[default]
+    /// Do not check, behavior depends on build type + platform
     None,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// How to handle EOF when reading input
 pub enum EofBehavior {
     #[default]
+    /// Do not change the value of the cell
     NoChange,
+    /// Set the value of the cell to the given value
     Fixed(u8),
 }
 
 #[derive(Debug, TypedBuilder)]
 pub struct BrainfuckToRust {
+    /// The size of the memory array ("tape")
     pub memory_size: usize,
     #[builder(default)]
     pub pointer_safety: PointerSafety,
